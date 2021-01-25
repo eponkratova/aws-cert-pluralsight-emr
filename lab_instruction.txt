@@ -1,0 +1,87 @@
+Lab 1 - create cluster
+
+
+1. Create an emr cluster
+
+Then, you could either a step from the front-end
+2. Add a step 'Hive program'
+script location - s3://us-east-1.elasticmapreduce.samples/cloudfront/code/Hive_CloudFront.q
+input s3 - s3://us-east-1.elasticmapreduce.samples
+
+Or after ssh to the instance
+3. Add the role ElasticMapReduceFullAccess
+4. Type
+aws emr add-steps --cluster-id j-7F1N62F4TMB6 --steps Type=HIVE,Name="Hive from cli",ActionOnFailure=CONTINUE,Args=[-f,s3://us-east-1.elasticmapreduce.samples/cloudfront/code/Hive_CloudFront.q,-d,INPUT=s3://us-east-1.elasticmapreduce.samples,-d,OUTPUT=s3://ekafolder/awsclie] --region us-east-1
+
+aws emr list-steps --cluster-id j-7F1N62F4TMB6 --step-ids
+
+
+
+
+
+
+Lab 2 - Query Dynamodb tables via EMR
+1. Start the cluster. While creating the cluster, add the configurations
+[
+{
+"Classification": "hive-site",
+"Properties":{
+"hive.execution.engine":"mr"
+}
+}]
+2. Create a dynamodb table - see the script in the same folder in the repository and add items
+3. SSH to the cluster and type
+hive
+4. Run the create dynamodb script in hive to create the table in the cluster which is mapped to the dynamodb table
+
+
+
+
+
+Lab 3 - Query Redshift tables via EMR
+1. Launch Redshift cluster and attach the role that has RedshiftFullAccess and ElasticMapReduceFullAccess
+2. Launch an emr cluser
+3. Go to Redshift query editor and create a redshift table using the script in this github repository
+4. SSH to emr master node and create a config file
+vim copy.json
+
+And add:
+[
+    {
+        "Name":"CopyS3 venue step",
+        "Args":["s3-dist-cp","--s3Endpoint=s3.amazonaws.com","--src=s3://ekafolder/redshift/","--dest=hdfs:///output"],
+        "ActionOnFailure":"CONTINUE",
+        "Type":"CUSTOM_JAR",
+        "Jar":"command-runner.jar"
+    }
+]
+
+5. Exist the editor and run
+aws emr add-steps --cluster-id j-3KOV7J3JIUUK3 --steps file:///home/hadoop/copy.json  --region us-east-1
+
+6. Copy the redshift public key from the console and change the authorized key file for hadoop
+sudo vim /home/hadoop/.ssh/autorized_keys
+
+paste the key to the last line and save
+
+7. Do the same for the core node
+
+8. Go to the security groups for the master and slave and edit inbound i.e. change ssh from redhshift ip - public ip
+
+hadoop fs -ls hdfs:///output
+
+9. Then, you could query the hive table from the Redshift editor
+
+
+
+
+
+
+
+
+Lab 4 - HBase 
+1. Launch emr cluster with hbase selected
+2. Run 
+hbase shell
+create 'table1', 'family1'
+put 'table1', 'row1', 'family1:col1', 'hello'
