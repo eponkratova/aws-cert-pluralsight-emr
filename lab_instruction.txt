@@ -11,9 +11,9 @@ input s3 - s3://us-east-1.elasticmapreduce.samples
 Or after ssh to the instance
 3. Add the role ElasticMapReduceFullAccess
 4. Type
-aws emr add-steps --cluster-id j-7F1N62F4TMB6 --steps Type=HIVE,Name="Hive from cli",ActionOnFailure=CONTINUE,Args=[-f,s3://us-east-1.elasticmapreduce.samples/cloudfront/code/Hive_CloudFront.q,-d,INPUT=s3://us-east-1.elasticmapreduce.samples,-d,OUTPUT=s3://ekafolder/awsclie] --region us-east-1
+aws emr add-steps --cluster-id <yourClusterID> --steps Type=HIVE,Name="Hive from cli",ActionOnFailure=CONTINUE,Args=[-f,s3://us-east-1.elasticmapreduce.samples/cloudfront/code/Hive_CloudFront.q,-d,INPUT=s3://us-east-1.elasticmapreduce.samples,-d,OUTPUT=s3://ekafolder/awsclie] --region us-east-1
 
-aws emr list-steps --cluster-id j-7F1N62F4TMB6 --step-ids
+aws emr list-steps --cluster-id <yourClusterID> --step-ids
 
 
 
@@ -57,7 +57,7 @@ And add:
 ]
 
 5. Exist the editor and run
-aws emr add-steps --cluster-id j-3KOV7J3JIUUK3 --steps file:///home/hadoop/copy.json  --region us-east-1
+aws emr add-steps --cluster-id <yourClusterID> --steps file:///home/hadoop/copy.json  --region us-east-1
 
 6. Copy the redshift public key from the console and change the authorized key file for hadoop
 sudo vim /home/hadoop/.ssh/autorized_keys
@@ -85,3 +85,21 @@ Lab 4 - HBase
 hbase shell
 create 'table1', 'family1'
 put 'table1', 'row1', 'family1:col1', 'hello'
+
+
+
+
+
+Lab 5 - Spark
+1. Create a cluster with Spark installed
+2. SSH to the instance
+3. Run
+pyspark
+3. Add a new step in the terminal
+aws emr add-steps --cluster-id <yourClusterID> \
+--steps Type=CUSTOM_JAR,Name="Spark Program",Jar="command-runner.jar",ActionOnFailure=CONTINUE,Args=[spark-example,SparkPi,20]
+4. cd /usr/lib/spark/examples/
+cd /mnt/var/log/hadoop/steps/
+cd <yourstepid>
+cat stdout
+
